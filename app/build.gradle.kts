@@ -21,7 +21,7 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "BASE_URL", "\"https://backend-financeku.zorroserver.net/api/v1/\"")
+        buildConfigField("String", "BASE_URL", "\"http://127.0.0.1:8080/api/v1/\"")
     }
 
     buildTypes {
