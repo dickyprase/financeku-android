@@ -1,11 +1,9 @@
 package com.financeku.app.ui.navigation
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -30,7 +28,7 @@ import com.financeku.app.ui.overtime.OvertimeListScreen
 import com.financeku.app.ui.profile.ChangePasswordScreen
 import com.financeku.app.ui.profile.ProfileScreen
 import com.financeku.app.ui.reports.ReportsScreen
-import com.financeku.app.ui.theme.LocalDarkMode
+import com.financeku.app.ui.theme.*
 
 @Composable
 fun FinanceKuNavHost() {
@@ -38,8 +36,6 @@ fun FinanceKuNavHost() {
     val tokenDataStore: TokenDataStore = hiltViewModel<NavViewModel>().tokenDataStore
     val token by tokenDataStore.accessToken.collectAsStateWithLifecycle(initialValue = null)
     val startDestination = if (token.isNullOrEmpty()) Screen.Login.route else Screen.Dashboard.route
-
-    var currentStartDest by remember { mutableStateOf(startDestination) }
 
     LaunchedEffect(token) {
         if (token.isNullOrEmpty()) {
@@ -50,6 +46,7 @@ fun FinanceKuNavHost() {
     }
 
     Scaffold(
+        containerColor = DarkBackground,
         bottomBar = {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
@@ -58,7 +55,7 @@ fun FinanceKuNavHost() {
             }
 
             if (showBottomBar) {
-                GlassBottomBar(navController = navController, currentDestination = currentDestination)
+                FuturisticBottomBar(navController = navController, currentDestination = currentDestination)
             }
         }
     ) { paddingValues ->
@@ -182,26 +179,33 @@ fun FinanceKuNavHost() {
 }
 
 @Composable
-private fun GlassBottomBar(
+private fun FuturisticBottomBar(
     navController: NavHostController,
     currentDestination: androidx.navigation.NavDestination?
 ) {
-    val isDark = LocalDarkMode.current.value
-    val containerColor = if (isDark) Color(0xDD1A1929) else Color(0xDDFFFFFF)
-
     NavigationBar(
-        containerColor = containerColor,
-        tonalElevation = 0.dp
+        containerColor = NavBarBackground,
+        tonalElevation = 0.dp,
+        modifier = Modifier.height(72.dp)
     ) {
         Screen.bottomNavItems.forEach { screen ->
             val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
             NavigationBarItem(
                 icon = {
                     screen.icon?.let {
-                        Icon(imageVector = it, contentDescription = screen.title)
+                        Icon(
+                            imageVector = it,
+                            contentDescription = screen.title,
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
                 },
-                label = { Text(screen.title, style = MaterialTheme.typography.labelSmall) },
+                label = {
+                    Text(
+                        text = screen.title,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
                 selected = selected,
                 onClick = {
                     navController.navigate(screen.route) {
@@ -213,11 +217,11 @@ private fun GlassBottomBar(
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                    indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                    selectedIconColor = CyanAccent,
+                    selectedTextColor = CyanAccent,
+                    unselectedIconColor = TextTertiary,
+                    unselectedTextColor = TextTertiary,
+                    indicatorColor = NavBarIndicator
                 )
             )
         }

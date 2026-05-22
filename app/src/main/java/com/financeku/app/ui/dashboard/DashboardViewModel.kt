@@ -2,9 +2,8 @@ package com.financeku.app.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.financeku.app.data.repository.ReportRepository
 import com.financeku.app.data.repository.Resource
-import com.financeku.app.domain.model.DashboardReport
-import com.financeku.app.domain.usecase.GetDashboardUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,14 +11,18 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class DashboardUiState(
+    val totalBalance: Double = 0.0,
+    val monthlyIncome: Double = 0.0,
+    val monthlyExpense: Double = 0.0,
+    val overtimePending: Double = 0.0,
+    val budgetPercentage: Double = 0.0,
     val isLoading: Boolean = false,
-    val report: DashboardReport? = null,
     val error: String? = null
 )
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val getDashboardUseCase: GetDashboardUseCase
+    private val reportRepository: ReportRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -32,11 +35,20 @@ class DashboardViewModel @Inject constructor(
     fun loadDashboard() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            when (val result = getDashboardUseCase()) {
+            when (val result = reportRepository.getDashboard()) {
                 is Resource.Success -> {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        report = result.data
+                    val data = result.data
+                    val income = data.monthlyIncome
+                    val expense = data.monthlyExpense
+                    val percentage = if (income > 0) (expense / income) * 100 else 0.0
+
+                    _uiState.value = DashboardUiState(
+                        totalBalance = data.totalBalance,
+                        monthlyIncome = income,
+                        monthlyExpense = expense,
+                        overtimePending = data.overtimePending,
+                        budgetPercentage = percentage,
+                        isLoading = false
                     )
                 }
                 is Resource.Error -> {

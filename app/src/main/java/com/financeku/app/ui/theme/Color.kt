@@ -2,50 +2,43 @@ package com.financeku.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Light Theme Colors
-val PrimaryLight = Color(0xFF6C63FF)
-val PrimaryVariantLight = Color(0xFF5A52E0)
-val SecondaryLight = Color(0xFF03DAC6)
-val BackgroundLight = Color(0xFFF8F9FE)
-val SurfaceLight = Color(0xFFFFFFFF)
-val OnPrimaryLight = Color(0xFFFFFFFF)
-val OnSecondaryLight = Color(0xFF000000)
-val OnBackgroundLight = Color(0xFF1C1B1F)
-val OnSurfaceLight = Color(0xFF1C1B1F)
-val ErrorLight = Color(0xFFE53935)
+// === Dark Futuristic Palette ===
 
-// Dark Theme Colors
-val PrimaryDark = Color(0xFF9D97FF)
-val PrimaryVariantDark = Color(0xFF7B73FF)
-val SecondaryDark = Color(0xFF03DAC6)
-val BackgroundDark = Color(0xFF0F0E1A)
-val SurfaceDark = Color(0xFF1A1929)
-val OnPrimaryDark = Color(0xFF000000)
-val OnSecondaryDark = Color(0xFF000000)
-val OnBackgroundDark = Color(0xFFE6E1E5)
-val OnSurfaceDark = Color(0xFFE6E1E5)
-val ErrorDark = Color(0xFFEF5350)
+// Background layers (very dark blue-gray, not pure black)
+val DarkBackground = Color(0xFF0F1219)
+val DarkSurface = Color(0xFF1A202C)
+val DarkSurfaceVariant = Color(0xFF232B3A)
+val DarkCard = Color(0xFF1E2736)
+val DarkCardBorder = Color(0xFF2D3748)
 
-// Glass Morphism Colors
-val GlassWhite = Color(0x33FFFFFF)
-val GlassBorder = Color(0x55FFFFFF)
-val GlassDarkBg = Color(0x22FFFFFF)
-val GlassDarkBorder = Color(0x33FFFFFF)
-val GlassLightBg = Color(0x88FFFFFF)
-val GlassLightBorder = Color(0xAAFFFFFF)
+// Accent colors
+val CyanAccent = Color(0xFF22D3EE)
+val CyanAccentDark = Color(0xFF0891B2)
+val BlueAccent = Color(0xFF3B82F6)
+val BlueAccentLight = Color(0xFF60A5FA)
 
-// Accent Colors
-val IncomeGreen = Color(0xFF4CAF50)
-val ExpenseRed = Color(0xFFE53935)
-val OvertimeOrange = Color(0xFFFF9800)
-val GoalBlue = Color(0xFF2196F3)
-val TransferPurple = Color(0xFF9C27B0)
+// Status / indicator colors (vibrant but not harsh)
+val RedIndicator = Color(0xFFEF4444)
+val OrangeIndicator = Color(0xFFF97316)
+val YellowIndicator = Color(0xFFFBBF24)
+val GreenIndicator = Color(0xFF22C55E)
+val PurpleIndicator = Color(0xFFA855F7)
 
-// Gradient Colors
-val GradientStart = Color(0xFF6C63FF)
-val GradientMiddle = Color(0xFF9D97FF)
-val GradientEnd = Color(0xFFB8B3FF)
+// Text colors
+val TextPrimary = Color(0xFFF1F5F9)        // White - high emphasis
+val TextSecondary = Color(0xFF94A3B8)      // Gray - medium emphasis
+val TextTertiary = Color(0xFF64748B)       // Darker gray - low emphasis
 
-val GradientDarkStart = Color(0xFF1A1929)
-val GradientDarkMiddle = Color(0xFF252438)
-val GradientDarkEnd = Color(0xFF2F2E45)
+// Bottom nav
+val NavBarBackground = Color(0xFF141B27)
+val NavBarIndicator = Color(0xFF1E3A5F)
+
+// === Light Theme (optional fallback) ===
+val LightBackground = Color(0xFFF8FAFC)
+val LightSurface = Color(0xFFFFFFFF)
+val LightSurfaceVariant = Color(0xFFF1F5F9)
+val LightCard = Color(0xFFFFFFFF)
+val LightCardBorder = Color(0xFFE2E8F0)
+val LightTextPrimary = Color(0xFF0F172A)
+val LightTextSecondary = Color(0xFF475569)
+val LightTextTertiary = Color(0xFF94A3B8)

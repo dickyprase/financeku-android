@@ -1,7 +1,7 @@
 package com.financeku.app.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -13,220 +13,325 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.financeku.app.ui.theme.*
 
+/**
+ * Dark card with subtle border - main container component
+ */
 @Composable
-fun GlassCard(
+fun DarkCard(
     modifier: Modifier = Modifier,
-    cornerRadius: Dp = 16.dp,
+    cornerRadius: Dp = 20.dp,
+    borderColor: Color = DarkCardBorder,
+    backgroundColor: Color = DarkCard,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val isDark = LocalDarkMode.current.value
-    val bgColor = if (isDark) GlassDarkBg else GlassLightBg
-    val borderColor = if (isDark) GlassDarkBorder else GlassLightBorder
-    val gradientColors = if (isDark) {
-        listOf(Color(0x15FFFFFF), Color(0x08FFFFFF))
-    } else {
-        listOf(Color(0x99FFFFFF), Color(0x66FFFFFF))
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(cornerRadius),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        border = BorderStroke(1.dp, borderColor)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            content = content
+        )
     }
-
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(cornerRadius))
-            .background(
-                brush = Brush.verticalGradient(gradientColors)
-            )
-            .border(
-                width = 1.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(cornerRadius)
-            )
-            .padding(16.dp),
-        content = content
-    )
 }
 
+/**
+ * Stat card for grid display (like Bookmark, XP, Streak)
+ */
 @Composable
-fun GlassButton(
-    onClick: () -> Unit,
+fun StatCard(
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    content: @Composable RowScope.() -> Unit
+    icon: ImageVector,
+    iconColor: Color = CyanAccent,
+    value: String,
+    label: String
 ) {
-    val isDark = LocalDarkMode.current.value
-    val gradientColors = if (isDark) {
-        listOf(PrimaryDark.copy(alpha = 0.8f), PrimaryVariantDark.copy(alpha = 0.6f))
-    } else {
-        listOf(PrimaryLight, PrimaryVariantLight)
-    }
-
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = modifier
-            .height(52.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent
-        ),
-        contentPadding = PaddingValues(0.dp)
+    DarkCard(
+        modifier = modifier,
+        cornerRadius = 16.dp
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = if (enabled) gradientColors
-                        else listOf(Color.Gray.copy(alpha = 0.5f), Color.Gray.copy(alpha = 0.3f))
-                    )
-                ),
-            contentAlignment = Alignment.Center
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                content = content
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = iconColor,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.displaySmall,
+                color = TextPrimary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary
             )
         }
     }
 }
 
+/**
+ * Primary button with cyan accent gradient
+ */
 @Composable
-fun GlassTextField(
+fun PrimaryButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    isLoading: Boolean = false
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(52.dp),
+        enabled = enabled && !isLoading,
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = CyanAccent,
+            contentColor = DarkBackground,
+            disabledContainerColor = CyanAccent.copy(alpha = 0.3f),
+            disabledContentColor = DarkBackground.copy(alpha = 0.5f)
+        ),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 0.dp,
+            pressedElevation = 0.dp
+        )
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = DarkBackground,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+    }
+}
+
+/**
+ * Secondary/outline button
+ */
+@Composable
+fun SecondaryButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(52.dp),
+        enabled = enabled,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, CyanAccent.copy(alpha = 0.5f)),
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = CyanAccent
+        )
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge
+        )
+    }
+}
+
+/**
+ * Dark themed text field
+ */
+@Composable
+fun DarkTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     label: String = "",
     placeholder: String = "",
-    leadingIcon: @Composable (() -> Unit)? = null,
+    leadingIcon: ImageVector? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
-    isError: Boolean = false,
-    errorMessage: String? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     singleLine: Boolean = true,
-    maxLines: Int = 1
+    isError: Boolean = false,
+    errorMessage: String? = null
 ) {
-    val isDark = LocalDarkMode.current.value
-    val bgColor = if (isDark) Color(0x15FFFFFF) else Color(0x66FFFFFF)
-    val borderColor = if (isError) {
-        MaterialTheme.colorScheme.error
-    } else if (isDark) {
-        GlassDarkBorder
-    } else {
-        GlassLightBorder
-    }
-
     Column(modifier = modifier) {
         if (label.isNotEmpty()) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                modifier = Modifier.padding(bottom = 6.dp)
+                color = TextSecondary,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
         }
-
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(bgColor),
+            modifier = Modifier.fillMaxWidth(),
             placeholder = {
-                if (placeholder.isNotEmpty()) {
-                    Text(
-                        text = placeholder,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                Text(
+                    text = placeholder,
+                    color = TextTertiary
+                )
+            },
+            leadingIcon = leadingIcon?.let {
+                {
+                    Icon(
+                        imageVector = it,
+                        contentDescription = null,
+                        tint = TextSecondary
                     )
                 }
             },
-            leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,
-            isError = isError,
             visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             singleLine = singleLine,
-            maxLines = maxLines,
-            shape = RoundedCornerShape(12.dp),
+            isError = isError,
+            shape = RoundedCornerShape(14.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = borderColor,
-                errorBorderColor = MaterialTheme.colorScheme.error,
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent
+                focusedTextColor = TextPrimary,
+                unfocusedTextColor = TextPrimary,
+                focusedBorderColor = CyanAccent,
+                unfocusedBorderColor = DarkCardBorder,
+                errorBorderColor = RedIndicator,
+                focusedContainerColor = DarkSurfaceVariant,
+                unfocusedContainerColor = DarkSurfaceVariant,
+                cursorColor = CyanAccent
             )
         )
-
-        if (isError && !errorMessage.isNullOrEmpty()) {
+        if (isError && errorMessage != null) {
             Text(
                 text = errorMessage,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
+                color = RedIndicator,
                 modifier = Modifier.padding(top = 4.dp, start = 4.dp)
             )
         }
     }
 }
 
+/**
+ * Menu list item with icon and chevron (like Settings rows)
+ */
 @Composable
-fun GlassTopBar(
+fun MenuListItem(
+    icon: ImageVector,
+    iconColor: Color = TextSecondary,
     title: String,
-    modifier: Modifier = Modifier,
-    navigationIcon: @Composable (() -> Unit)? = null,
-    actions: @Composable RowScope.() -> Unit = {}
+    subtitle: String? = null,
+    trailingIcon: ImageVector? = null,
+    onClick: () -> Unit
 ) {
-    val isDark = LocalDarkMode.current.value
-    val bgColor = if (isDark) Color(0x22FFFFFF) else Color(0x88FFFFFF)
-
     Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = bgColor,
-        tonalElevation = 0.dp
+        onClick = onClick,
+        color = Color.Transparent,
+        shape = RoundedCornerShape(12.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .statusBarsPadding(),
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (navigationIcon != null) {
-                navigationIcon()
-                Spacer(modifier = Modifier.width(12.dp))
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(DarkSurfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = iconColor,
+                    modifier = Modifier.size(20.dp)
+                )
             }
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
-            )
-            actions()
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = TextPrimary
+                )
+                if (subtitle != null) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                }
+            }
+            if (trailingIcon != null) {
+                Icon(
+                    imageVector = trailingIcon,
+                    contentDescription = null,
+                    tint = TextTertiary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
     }
 }
 
+/**
+ * Section header text
+ */
 @Composable
-fun LoadingIndicator(
+fun SectionHeader(
+    title: String,
     modifier: Modifier = Modifier
 ) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleMedium,
+        color = TextSecondary,
+        modifier = modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+    )
+}
+
+/**
+ * Loading indicator centered
+ */
+@Composable
+fun LoadingIndicator(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
-            color = MaterialTheme.colorScheme.primary
+            color = CyanAccent,
+            strokeWidth = 3.dp
         )
     }
 }
 
+/**
+ * Error message with retry
+ */
 @Composable
 fun ErrorMessage(
     message: String,
@@ -236,19 +341,58 @@ fun ErrorMessage(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(32.dp),
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = message,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.error
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextSecondary
         )
         if (onRetry != null) {
-            Spacer(modifier = Modifier.height(16.dp))
-            GlassButton(onClick = onRetry) {
-                Text("Retry", color = Color.White)
-            }
+            Spacer(modifier = Modifier.height(12.dp))
+            SecondaryButton(
+                text = "Retry",
+                onClick = onRetry,
+                modifier = Modifier.width(120.dp)
+            )
         }
     }
+}
+
+/**
+ * Top app bar with dark futuristic style
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DarkTopBar(
+    title: String,
+    onBackClick: (() -> Unit)? = null,
+    actions: @Composable RowScope.() -> Unit = {}
+) {
+    TopAppBar(
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineSmall,
+                color = TextPrimary
+            )
+        },
+        navigationIcon = {
+            if (onBackClick != null) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = TextPrimary
+                    )
+                }
+            }
+        },
+        actions = actions,
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = DarkBackground,
+            scrolledContainerColor = DarkSurface
+        )
+    )
 }
