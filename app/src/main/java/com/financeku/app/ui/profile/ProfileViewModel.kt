@@ -3,7 +3,7 @@ package com.financeku.app.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.financeku.app.data.local.datastore.TokenDataStore
-import com.financeku.app.data.repository.ProfileRepository
+import com.financeku.app.data.repository.AuthRepository
 import com.financeku.app.data.repository.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,12 +20,20 @@ data class ProfileUiState(
     val transactionCount: Int = 0,
     val overtimeCount: Int = 0,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val changePasswordState: ChangePasswordState = ChangePasswordState.Idle
 )
+
+sealed class ChangePasswordState {
+    data object Idle : ChangePasswordState()
+    data object Loading : ChangePasswordState()
+    data object Success : ChangePasswordState()
+    data class Error(val message: String) : ChangePasswordState()
+}
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val profileRepository: ProfileRepository,
+    private val authRepository: AuthRepository,
     private val tokenDataStore: TokenDataStore
 ) : ViewModel() {
 
@@ -50,13 +58,12 @@ class ProfileViewModel @Inject constructor(
             )
 
             // Load full profile from API
-            when (val result = profileRepository.getProfile()) {
+            when (val result = authRepository.getMe()) {
                 is Resource.Success -> {
-                    val profile = result.data
+                    val user = result.data
                     _uiState.value = _uiState.value.copy(
-                        name = profile.name,
-                        email = profile.email,
-                        role = profile.role ?: "user"
+                        name = user.name,
+                        email = user.email
                     )
                 }
                 is Resource.Error -> {
@@ -65,6 +72,35 @@ class ProfileViewModel @Inject constructor(
                 is Resource.Loading -> {}
             }
         }
+    }
+
+    fun changePassword(currentPassword: String, newPassword: String, confirmation: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(changePasswordState = ChangePasswordState.Loading)
+            // Use a simple approach - call API directly
+            try {
+                val response = authRepository.changePassword(currentPassword, newPassword, confirmation)
+                when (response) {
+                    is Resource.Success -> {
+                        _uiState.value = _uiState.value.copy(changePasswordState = ChangePasswordState.Success)
+                    }
+                    is Resource.Error -> {
+                        _uiState.value = _uiState.value.copy(
+                            changePasswordState = ChangePasswordState.Error(response.message)
+                        )
+                    }
+                    is Resource.Loading -> {}
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    changePasswordState = ChangePasswordState.Error(e.message ?: "Failed")
+                )
+            }
+        }
+    }
+
+    fun resetChangePasswordState() {
+        _uiState.value = _uiState.value.copy(changePasswordState = ChangePasswordState.Idle)
     }
 
     fun logout() {

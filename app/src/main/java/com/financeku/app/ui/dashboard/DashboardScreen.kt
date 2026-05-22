@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -136,7 +137,7 @@ fun DashboardScreen(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 LinearProgressIndicator(
-                    progress = { (uiState.budgetPercentage / 100f).coerceIn(0f, 1f) },
+                    progress = { (uiState.budgetPercentage.toFloat() / 100f).coerceIn(0f, 1f) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(8.dp)

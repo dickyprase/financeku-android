@@ -15,16 +15,16 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.financeku.app.ui.components.*
 import com.financeku.app.ui.theme.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChangePasswordScreen(
     onNavigateBack: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val changePasswordState by viewModel.changePasswordState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
@@ -32,8 +32,8 @@ fun ChangePasswordScreen(
     var showCurrentPassword by remember { mutableStateOf(false) }
     var showNewPassword by remember { mutableStateOf(false) }
 
-    LaunchedEffect(changePasswordState.success) {
-        if (changePasswordState.success) {
+    LaunchedEffect(uiState.changePasswordState) {
+        if (uiState.changePasswordState is ChangePasswordState.Success) {
             viewModel.resetChangePasswordState()
             onNavigateBack()
         }
@@ -116,9 +116,9 @@ fun ChangePasswordScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                if (changePasswordState.error != null) {
+                if (uiState.changePasswordState is ChangePasswordState.Error) {
                     Text(
-                        text = changePasswordState.error!!,
+                        text = (uiState.changePasswordState as ChangePasswordState.Error).message,
                         style = MaterialTheme.typography.bodySmall,
                         color = RedIndicator,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -130,11 +130,11 @@ fun ChangePasswordScreen(
                     onClick = {
                         viewModel.changePassword(currentPassword, newPassword, confirmPassword)
                     },
-                    enabled = !changePasswordState.isLoading &&
+                    enabled = uiState.changePasswordState !is ChangePasswordState.Loading &&
                             currentPassword.isNotBlank() &&
                             newPassword.isNotBlank() &&
                             newPassword == confirmPassword,
-                    isLoading = changePasswordState.isLoading,
+                    isLoading = uiState.changePasswordState is ChangePasswordState.Loading,
                     modifier = Modifier.fillMaxWidth()
                 )
             }

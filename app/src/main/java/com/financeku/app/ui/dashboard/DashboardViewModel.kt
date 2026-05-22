@@ -35,7 +35,7 @@ class DashboardViewModel @Inject constructor(
     fun loadDashboard() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            when (val result = reportRepository.getDashboard()) {
+            when (val result = reportRepository.getDashboardReport()) {
                 is Resource.Success -> {
                     val data = result.data
                     val income = data.monthlyIncome

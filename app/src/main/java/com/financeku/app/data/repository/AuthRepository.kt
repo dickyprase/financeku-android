@@ -77,6 +77,21 @@ class AuthRepository @Inject constructor(
         tokenDataStore.clearTokens()
     }
 
+    suspend fun changePassword(currentPassword: String, newPassword: String, confirmation: String): Resource<Unit> {
+        return try {
+            val response = apiService.changePassword(
+                ChangePasswordRequest(currentPassword, newPassword, confirmation)
+            )
+            if (response.isSuccessful && response.body()?.success == true) {
+                Resource.Success(Unit)
+            } else {
+                Resource.Error(response.body()?.message ?: "Failed to change password")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error")
+        }
+    }
+
     private fun UserDto.toDomain() = User(
         id = id,
         name = name,
