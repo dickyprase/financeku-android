@@ -10,8 +10,6 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,25 +39,14 @@ fun TransferScreen(
         }
     }
 
-    val isDark = LocalDarkMode.current.value
-    val bgGradient = if (isDark) {
-        Brush.verticalGradient(listOf(BackgroundDark, GradientDarkMiddle))
-    } else {
-        Brush.verticalGradient(listOf(BackgroundLight, Color(0xFFF3E5F5)))
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(bgGradient)
+            .background(DarkBackground)
     ) {
-        GlassTopBar(
+        DarkTopBar(
             title = "Transfer",
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-                }
-            }
+            onBackClick = onNavigateBack
         )
 
         Column(
@@ -69,11 +56,11 @@ fun TransferScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            GlassCard(modifier = Modifier.fillMaxWidth()) {
+            DarkCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Transfer Between Wallets",
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = TextPrimary
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -83,12 +70,12 @@ fun TransferScreen(
                     expanded = fromExpanded,
                     onExpandedChange = { fromExpanded = it }
                 ) {
-                    GlassTextField(
+                    DarkTextField(
                         value = uiState.wallets.find { it.id == fromWalletId }?.name ?: "",
                         onValueChange = {},
                         label = "From Wallet",
                         placeholder = "Select source wallet",
-                        leadingIcon = { Icon(Icons.Filled.ArrowUpward, contentDescription = null, tint = ExpenseRed) },
+                        leadingIcon = Icons.Filled.ArrowUpward,
                         modifier = Modifier
                             .fillMaxWidth()
                             .menuAnchor()
@@ -119,7 +106,7 @@ fun TransferScreen(
                     Icon(
                         Icons.Filled.SwapVert,
                         contentDescription = "Swap",
-                        tint = TransferPurple,
+                        tint = PurpleIndicator,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -131,12 +118,12 @@ fun TransferScreen(
                     expanded = toExpanded,
                     onExpandedChange = { toExpanded = it }
                 ) {
-                    GlassTextField(
+                    DarkTextField(
                         value = uiState.wallets.find { it.id == toWalletId }?.name ?: "",
                         onValueChange = {},
                         label = "To Wallet",
                         placeholder = "Select destination wallet",
-                        leadingIcon = { Icon(Icons.Filled.ArrowDownward, contentDescription = null, tint = IncomeGreen) },
+                        leadingIcon = Icons.Filled.ArrowDownward,
                         modifier = Modifier
                             .fillMaxWidth()
                             .menuAnchor()
@@ -161,24 +148,24 @@ fun TransferScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                GlassTextField(
+                DarkTextField(
                     value = amount,
                     onValueChange = { amount = it },
                     label = "Amount",
                     placeholder = "0",
-                    leadingIcon = { Icon(Icons.Filled.AttachMoney, contentDescription = null) },
+                    leadingIcon = Icons.Filled.AttachMoney,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                GlassTextField(
+                DarkTextField(
                     value = description,
                     onValueChange = { description = it },
                     label = "Description (Optional)",
                     placeholder = "Transfer note",
-                    leadingIcon = { Icon(Icons.Filled.Description, contentDescription = null) },
+                    leadingIcon = Icons.Filled.Description,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -188,29 +175,23 @@ fun TransferScreen(
                     Text(
                         text = transferState.error!!,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
+                        color = RedIndicator,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
 
-                GlassButton(
+                PrimaryButton(
+                    text = "Transfer",
                     onClick = {
-                        val amountVal = amount.toDoubleOrNull() ?: return@GlassButton
+                        val amountVal = amount.toDoubleOrNull() ?: return@PrimaryButton
                         viewModel.transfer(fromWalletId, toWalletId, amountVal, description.ifBlank { null })
                     },
                     enabled = !transferState.isLoading &&
                             fromWalletId.isNotBlank() && toWalletId.isNotBlank() &&
                             amount.isNotBlank() && fromWalletId != toWalletId,
+                    isLoading = transferState.isLoading,
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (transferState.isLoading) {
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
-                    Icon(Icons.Filled.SwapHoriz, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Transfer", color = Color.White)
-                }
+                )
             }
         }
     }

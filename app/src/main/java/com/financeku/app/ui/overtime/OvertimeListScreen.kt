@@ -10,8 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -20,38 +18,33 @@ import com.financeku.app.ui.theme.*
 import java.text.NumberFormat
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OvertimeListScreen(
     onNavigateToForm: (String?) -> Unit,
     viewModel: OvertimeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.listState.collectAsState()
-    val isDark = LocalDarkMode.current.value
-    val bgGradient = if (isDark) {
-        Brush.verticalGradient(listOf(BackgroundDark, GradientDarkMiddle))
-    } else {
-        Brush.verticalGradient(listOf(BackgroundLight, Color(0xFFFFF3E0)))
-    }
 
     var showDisburseDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(bgGradient)
+            .background(DarkBackground)
     ) {
-        GlassTopBar(
+        DarkTopBar(
             title = "Overtime",
             actions = {
                 IconButton(onClick = { onNavigateToForm(null) }) {
-                    Icon(Icons.Filled.Add, contentDescription = "Add Overtime")
+                    Icon(Icons.Filled.Add, contentDescription = "Add Overtime", tint = TextPrimary)
                 }
             }
         )
 
         // Calculation Summary
         uiState.calculation?.let { calc ->
-            GlassCard(
+            DarkCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -59,7 +52,7 @@ fun OvertimeListScreen(
                 Text(
                     text = "Period Summary",
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    color = TextSecondary
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
@@ -67,23 +60,20 @@ fun OvertimeListScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text("Total Hours", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-                        Text("${calc.totalHours}h", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text("Total Hours", style = MaterialTheme.typography.bodySmall, color = TextTertiary)
+                        Text("${calc.totalHours}h", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
                     }
                     Column(horizontalAlignment = Alignment.End) {
-                        Text("Total Amount", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-                        Text(formatCurrency(calc.totalAmount), style = MaterialTheme.typography.titleMedium, color = OvertimeOrange, fontWeight = FontWeight.Bold)
+                        Text("Total Amount", style = MaterialTheme.typography.bodySmall, color = TextTertiary)
+                        Text(formatCurrency(calc.totalAmount), style = MaterialTheme.typography.titleMedium, color = OrangeIndicator, fontWeight = FontWeight.Bold)
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                GlassButton(
+                Spacer(modifier = Modifier.height(12.dp))
+                PrimaryButton(
+                    text = "Disburse",
                     onClick = { showDisburseDialog = true },
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Filled.Payment, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Disburse", color = Color.White)
-                }
+                )
             }
         }
 
@@ -103,13 +93,13 @@ fun OvertimeListScreen(
                             Icons.Filled.AccessTime,
                             contentDescription = null,
                             modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                            tint = TextTertiary
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             "No overtime records",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            color = TextSecondary
                         )
                     }
                 }
@@ -135,8 +125,9 @@ fun OvertimeListScreen(
     if (showDisburseDialog) {
         AlertDialog(
             onDismissRequest = { showDisburseDialog = false },
-            title = { Text("Disburse Overtime") },
-            text = { Text("Are you sure you want to disburse this overtime period?") },
+            title = { Text("Disburse Overtime", color = TextPrimary) },
+            text = { Text("Are you sure you want to disburse this overtime period?", color = TextSecondary) },
+            containerColor = DarkSurface,
             confirmButton = {
                 TextButton(onClick = {
                     uiState.calculation?.let {
@@ -144,12 +135,12 @@ fun OvertimeListScreen(
                     }
                     showDisburseDialog = false
                 }) {
-                    Text("Confirm")
+                    Text("Confirm", color = CyanAccent)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDisburseDialog = false }) {
-                    Text("Cancel")
+                    Text("Cancel", color = TextSecondary)
                 }
             }
         )
@@ -164,7 +155,7 @@ private fun OvertimeItem(
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    GlassCard(modifier = Modifier.fillMaxWidth()) {
+    DarkCard(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -174,19 +165,19 @@ private fun OvertimeItem(
                 Text(
                     text = overtime.date,
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = TextPrimary
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "${overtime.hours}h @ ${formatCurrency(overtime.rate)}/h",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    color = TextSecondary
                 )
                 if (!overtime.description.isNullOrEmpty()) {
                     Text(
                         text = overtime.description,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        color = TextTertiary
                     )
                 }
             }
@@ -194,7 +185,7 @@ private fun OvertimeItem(
                 Text(
                     text = formatCurrency(overtime.amount),
                     style = MaterialTheme.typography.titleMedium,
-                    color = OvertimeOrange,
+                    color = OrangeIndicator,
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
@@ -203,18 +194,18 @@ private fun OvertimeItem(
                     label = { Text(overtime.status, style = MaterialTheme.typography.labelSmall) },
                     colors = AssistChipDefaults.assistChipColors(
                         containerColor = when (overtime.status) {
-                            "pending" -> OvertimeOrange.copy(alpha = 0.1f)
-                            "disbursed" -> IncomeGreen.copy(alpha = 0.1f)
-                            else -> MaterialTheme.colorScheme.surfaceVariant
+                            "pending" -> OrangeIndicator.copy(alpha = 0.1f)
+                            "disbursed" -> GreenIndicator.copy(alpha = 0.1f)
+                            else -> DarkSurfaceVariant
                         }
                     )
                 )
                 Row {
                     IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Filled.Edit, contentDescription = "Edit", modifier = Modifier.size(16.dp))
+                        Icon(Icons.Filled.Edit, contentDescription = "Edit", modifier = Modifier.size(16.dp), tint = TextSecondary)
                     }
                     IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = ExpenseRed, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = RedIndicator, modifier = Modifier.size(16.dp))
                     }
                 }
             }
@@ -224,16 +215,17 @@ private fun OvertimeItem(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Overtime") },
-            text = { Text("Are you sure you want to delete this overtime record?") },
+            title = { Text("Delete Overtime", color = TextPrimary) },
+            text = { Text("Are you sure you want to delete this overtime record?", color = TextSecondary) },
+            containerColor = DarkSurface,
             confirmButton = {
                 TextButton(onClick = { onDelete(); showDeleteDialog = false }) {
-                    Text("Delete", color = ExpenseRed)
+                    Text("Delete", color = RedIndicator)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text("Cancel", color = TextSecondary)
                 }
             }
         )

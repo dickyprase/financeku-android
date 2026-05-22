@@ -10,14 +10,13 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.financeku.app.ui.components.*
 import com.financeku.app.ui.theme.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OvertimeFormScreen(
     overtimeId: String?,
@@ -39,25 +38,14 @@ fun OvertimeFormScreen(
         }
     }
 
-    val isDark = LocalDarkMode.current.value
-    val bgGradient = if (isDark) {
-        Brush.verticalGradient(listOf(BackgroundDark, GradientDarkMiddle))
-    } else {
-        Brush.verticalGradient(listOf(BackgroundLight, Color(0xFFFFF3E0)))
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(bgGradient)
+            .background(DarkBackground)
     ) {
-        GlassTopBar(
+        DarkTopBar(
             title = if (isEditing) "Edit Overtime" else "Add Overtime",
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-                }
-            }
+            onBackClick = onNavigateBack
         )
 
         Column(
@@ -67,50 +55,49 @@ fun OvertimeFormScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            GlassCard(modifier = Modifier.fillMaxWidth()) {
-                GlassTextField(
+            DarkCard(modifier = Modifier.fillMaxWidth()) {
+                DarkTextField(
                     value = date,
                     onValueChange = { date = it },
                     label = "Date",
                     placeholder = "YYYY-MM-DD",
-                    leadingIcon = { Icon(Icons.Filled.CalendarToday, contentDescription = null) },
+                    leadingIcon = Icons.Filled.CalendarToday,
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                GlassTextField(
+                DarkTextField(
                     value = hours,
                     onValueChange = { hours = it },
                     label = "Hours",
                     placeholder = "e.g. 2.5",
-                    leadingIcon = { Icon(Icons.Filled.AccessTime, contentDescription = null) },
+                    leadingIcon = Icons.Filled.AccessTime,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                GlassTextField(
+                DarkTextField(
                     value = rate,
                     onValueChange = { rate = it },
                     label = "Rate per Hour",
                     placeholder = "e.g. 50000",
-                    leadingIcon = { Icon(Icons.Filled.AttachMoney, contentDescription = null) },
+                    leadingIcon = Icons.Filled.AttachMoney,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                GlassTextField(
+                DarkTextField(
                     value = description,
                     onValueChange = { description = it },
                     label = "Description (Optional)",
                     placeholder = "What did you work on?",
-                    leadingIcon = { Icon(Icons.Filled.Description, contentDescription = null) },
+                    leadingIcon = Icons.Filled.Description,
                     singleLine = false,
-                    maxLines = 3,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -119,17 +106,20 @@ fun OvertimeFormScreen(
                 val rateVal = rate.toDoubleOrNull()
                 if (hoursVal != null && rateVal != null) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    GlassCard(modifier = Modifier.fillMaxWidth()) {
+                    DarkCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        backgroundColor = DarkSurfaceVariant
+                    ) {
                         Text(
                             text = "Preview",
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            color = TextSecondary
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Amount: Rp ${String.format("%,.0f", hoursVal * rateVal)}",
                             style = MaterialTheme.typography.titleMedium,
-                            color = OvertimeOrange
+                            color = OrangeIndicator
                         )
                     }
                 }
@@ -140,15 +130,16 @@ fun OvertimeFormScreen(
                     Text(
                         text = formState.error!!,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
+                        color = RedIndicator,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
 
-                GlassButton(
+                PrimaryButton(
+                    text = if (isEditing) "Update Overtime" else "Save Overtime",
                     onClick = {
-                        val h = hours.toDoubleOrNull() ?: return@GlassButton
-                        val r = rate.toDoubleOrNull() ?: return@GlassButton
+                        val h = hours.toDoubleOrNull() ?: return@PrimaryButton
+                        val r = rate.toDoubleOrNull() ?: return@PrimaryButton
                         if (isEditing) {
                             viewModel.updateOvertime(overtimeId!!, date, h, r, description.ifBlank { null })
                         } else {
@@ -156,21 +147,9 @@ fun OvertimeFormScreen(
                         }
                     },
                     enabled = !formState.isLoading && date.isNotBlank() && hours.isNotBlank() && rate.isNotBlank(),
+                    isLoading = formState.isLoading,
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (formState.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
-                    Text(
-                        if (isEditing) "Update Overtime" else "Save Overtime",
-                        color = Color.White
-                    )
-                }
+                )
             }
         }
     }

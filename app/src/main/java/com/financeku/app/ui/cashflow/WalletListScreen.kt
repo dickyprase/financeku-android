@@ -10,8 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -20,6 +18,7 @@ import com.financeku.app.ui.theme.*
 import java.text.NumberFormat
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WalletListScreen(
     onNavigateBack: () -> Unit,
@@ -28,35 +27,24 @@ fun WalletListScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showCreateDialog by remember { mutableStateOf(false) }
 
-    val isDark = LocalDarkMode.current.value
-    val bgGradient = if (isDark) {
-        Brush.verticalGradient(listOf(BackgroundDark, GradientDarkMiddle))
-    } else {
-        Brush.verticalGradient(listOf(BackgroundLight, Color(0xFFE3F2FD)))
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(bgGradient)
+            .background(DarkBackground)
     ) {
-        GlassTopBar(
+        DarkTopBar(
             title = "Wallets",
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-                }
-            },
+            onBackClick = onNavigateBack,
             actions = {
                 IconButton(onClick = { showCreateDialog = true }) {
-                    Icon(Icons.Filled.Add, contentDescription = "Add Wallet")
+                    Icon(Icons.Filled.Add, contentDescription = "Add Wallet", tint = TextPrimary)
                 }
             }
         )
 
         // Total balance
         val totalBalance = uiState.wallets.sumOf { it.balance }
-        GlassCard(
+        DarkCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -64,14 +52,14 @@ fun WalletListScreen(
             Text(
                 text = "Total Balance",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                color = TextSecondary
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = formatCurrency(totalBalance),
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = TextPrimary
             )
         }
 
@@ -85,13 +73,13 @@ fun WalletListScreen(
                         Icons.Filled.AccountBalanceWallet,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        tint = TextTertiary
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         "No wallets yet",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        color = TextSecondary
                     )
                 }
             }
@@ -104,7 +92,7 @@ fun WalletListScreen(
                 items(uiState.wallets) { wallet ->
                     var showDeleteDialog by remember { mutableStateOf(false) }
 
-                    GlassCard(modifier = Modifier.fillMaxWidth()) {
+                    DarkCard(modifier = Modifier.fillMaxWidth()) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -114,7 +102,7 @@ fun WalletListScreen(
                                 Icon(
                                     Icons.Filled.AccountBalanceWallet,
                                     contentDescription = null,
-                                    tint = GoalBlue,
+                                    tint = BlueAccent,
                                     modifier = Modifier.size(32.dp)
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
@@ -122,13 +110,14 @@ fun WalletListScreen(
                                     Text(
                                         text = wallet.name,
                                         style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Medium
+                                        fontWeight = FontWeight.Medium,
+                                        color = TextPrimary
                                     )
                                     if (wallet.isDefault) {
                                         Text(
                                             "Default wallet",
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.primary
+                                            color = CyanAccent
                                         )
                                     }
                                 }
@@ -138,7 +127,7 @@ fun WalletListScreen(
                                     text = formatCurrency(wallet.balance),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (wallet.balance >= 0) IncomeGreen else ExpenseRed
+                                    color = if (wallet.balance >= 0) GreenIndicator else RedIndicator
                                 )
                                 IconButton(
                                     onClick = { showDeleteDialog = true },
@@ -147,7 +136,7 @@ fun WalletListScreen(
                                     Icon(
                                         Icons.Filled.Delete,
                                         contentDescription = "Delete",
-                                        tint = ExpenseRed,
+                                        tint = RedIndicator,
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }
@@ -158,19 +147,20 @@ fun WalletListScreen(
                     if (showDeleteDialog) {
                         AlertDialog(
                             onDismissRequest = { showDeleteDialog = false },
-                            title = { Text("Delete Wallet") },
-                            text = { Text("Are you sure you want to delete '${wallet.name}'? This cannot be undone.") },
+                            title = { Text("Delete Wallet", color = TextPrimary) },
+                            text = { Text("Are you sure you want to delete '${wallet.name}'? This cannot be undone.", color = TextSecondary) },
+                            containerColor = DarkSurface,
                             confirmButton = {
                                 TextButton(onClick = {
                                     viewModel.deleteWallet(wallet.id)
                                     showDeleteDialog = false
                                 }) {
-                                    Text("Delete", color = ExpenseRed)
+                                    Text("Delete", color = RedIndicator)
                                 }
                             },
                             dismissButton = {
                                 TextButton(onClick = { showDeleteDialog = false }) {
-                                    Text("Cancel")
+                                    Text("Cancel", color = TextSecondary)
                                 }
                             }
                         )
@@ -201,21 +191,22 @@ private fun CreateWalletDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Create Wallet") },
+        title = { Text("Create Wallet", color = TextPrimary) },
+        containerColor = DarkSurface,
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
+                DarkTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Wallet Name") },
-                    singleLine = true,
+                    label = "Wallet Name",
+                    placeholder = "Enter wallet name",
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedTextField(
+                DarkTextField(
                     value = balance,
                     onValueChange = { balance = it },
-                    label = { Text("Initial Balance (optional)") },
-                    singleLine = true,
+                    label = "Initial Balance (optional)",
+                    placeholder = "0",
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -225,12 +216,12 @@ private fun CreateWalletDialog(
                 onClick = { onCreate(name, balance.toDoubleOrNull()) },
                 enabled = name.isNotBlank()
             ) {
-                Text("Create")
+                Text("Create", color = CyanAccent)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("Cancel", color = TextSecondary)
             }
         }
     )

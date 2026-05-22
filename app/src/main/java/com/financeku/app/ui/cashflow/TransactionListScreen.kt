@@ -5,14 +5,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -22,6 +21,7 @@ import com.financeku.app.ui.theme.*
 import java.text.NumberFormat
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionListScreen(
     onNavigateBack: () -> Unit,
@@ -29,28 +29,18 @@ fun TransactionListScreen(
     viewModel: CashflowViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val isDark = LocalDarkMode.current.value
-    val bgGradient = if (isDark) {
-        Brush.verticalGradient(listOf(BackgroundDark, GradientDarkMiddle))
-    } else {
-        Brush.verticalGradient(listOf(BackgroundLight, Color(0xFFE8F5E9)))
-    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(bgGradient)
+            .background(DarkBackground)
     ) {
-        GlassTopBar(
+        DarkTopBar(
             title = "Transactions",
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-                }
-            },
+            onBackClick = onNavigateBack,
             actions = {
                 IconButton(onClick = { onNavigateToForm(null) }) {
-                    Icon(Icons.Filled.Add, contentDescription = "Add Transaction")
+                    Icon(Icons.Filled.Add, contentDescription = "Add Transaction", tint = TextPrimary)
                 }
             }
         )
@@ -71,13 +61,13 @@ fun TransactionListScreen(
                             Icons.Filled.Receipt,
                             contentDescription = null,
                             modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                            tint = TextTertiary
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             "No transactions yet",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            color = TextSecondary
                         )
                     }
                 }
@@ -110,7 +100,7 @@ private fun TransactionItem(
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    GlassCard(
+    DarkCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
@@ -126,16 +116,16 @@ private fun TransactionItem(
             ) {
                 Surface(
                     modifier = Modifier.size(40.dp),
-                    shape = androidx.compose.foundation.shape.CircleShape,
+                    shape = CircleShape,
                     color = if (transaction.type == "income")
-                        IncomeGreen.copy(alpha = 0.1f) else ExpenseRed.copy(alpha = 0.1f)
+                        GreenIndicator.copy(alpha = 0.1f) else RedIndicator.copy(alpha = 0.1f)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             if (transaction.type == "income") Icons.Filled.ArrowDownward
                             else Icons.Filled.ArrowUpward,
                             contentDescription = null,
-                            tint = if (transaction.type == "income") IncomeGreen else ExpenseRed,
+                            tint = if (transaction.type == "income") GreenIndicator else RedIndicator,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -146,6 +136,7 @@ private fun TransactionItem(
                         text = transaction.description ?: transaction.categoryName ?: "Transaction",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
+                        color = TextPrimary,
                         maxLines = 1
                     )
                     Text(
@@ -159,7 +150,7 @@ private fun TransactionItem(
                             append(transaction.date)
                         },
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        color = TextTertiary,
                         maxLines = 1
                     )
                 }
@@ -169,7 +160,7 @@ private fun TransactionItem(
                 Text(
                     text = "${if (transaction.type == "expense") "-" else "+"}${formatCurrency(transaction.amount)}",
                     style = MaterialTheme.typography.titleSmall,
-                    color = if (transaction.type == "expense") ExpenseRed else IncomeGreen,
+                    color = if (transaction.type == "expense") RedIndicator else GreenIndicator,
                     fontWeight = FontWeight.SemiBold
                 )
                 IconButton(
@@ -179,7 +170,7 @@ private fun TransactionItem(
                     Icon(
                         Icons.Filled.Delete,
                         contentDescription = "Delete",
-                        tint = ExpenseRed.copy(alpha = 0.6f),
+                        tint = RedIndicator.copy(alpha = 0.6f),
                         modifier = Modifier.size(14.dp)
                     )
                 }
@@ -190,15 +181,16 @@ private fun TransactionItem(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Transaction") },
-            text = { Text("Are you sure you want to delete this transaction?") },
+            title = { Text("Delete Transaction", color = TextPrimary) },
+            text = { Text("Are you sure you want to delete this transaction?", color = TextSecondary) },
+            containerColor = DarkSurface,
             confirmButton = {
                 TextButton(onClick = { onDelete(); showDeleteDialog = false }) {
-                    Text("Delete", color = ExpenseRed)
+                    Text("Delete", color = RedIndicator)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel", color = TextSecondary) }
             }
         )
     }
